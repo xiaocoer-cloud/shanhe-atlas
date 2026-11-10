@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08100d">
+<title>山河卷 · 中国历史疆域图</title>
+<meta name="description" content="拖动时间轴，穿越两千四百年。从战国到当代，在一幅可缩放的中国历史疆域图上查看朝代更替、政权并立与疆域变迁。">
+<style>/*__STYLE__*/</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="seal" aria-hidden="true"><span>山</span><span>河</span></div>
+        <div class="brand-text">
+          <h1>山河卷</h1>
+          <p>SHANHE&nbsp;ATLAS<span class="dot">·</span>中国历史疆域图</p>
+        </div>
+        <button class="mobile-collapse" id="mobile-collapse" aria-label="展开或收起说明" title="展开/收起">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 12l5-5 5 5"/></svg>
+        </button>
+      </div>
+
+      <div class="sidebar-scroll" id="sidebar-scroll">
+        <div class="era-marker">
+          <span class="era-index" id="era-index">ERA 01 / 18</span>
+          <span class="era-line"></span>
+          <span class="era-span" id="era-span">前 403 — 前 221</span>
+        </div>
+
+        <h2 class="era-title" id="era-title">战国</h2>
+        <div class="era-sub">
+          <span id="era-badge">战国</span>
+          <span class="sep">/</span>
+          <span id="era-en">WARRING&nbsp;STATES</span>
+        </div>
+
+        <p class="era-summary" id="era-summary">公元前 403 年，周威烈王册命韩、赵、魏为诸侯。七雄并立，百家争鸣，旧秩序在兼并战争中缓缓退场。</p>
+
+        <div class="phase-card">
+          <div class="phase-top">
+            <span class="phase-label">疆域阶段</span>
+            <span class="phase-count" id="phase-count">01 / 15</span>
+          </div>
+          <p class="phase-caption" id="phase-caption">前 403 — 前 341 · 三家分晋、田氏代齐与魏霸中原</p>
+          <div class="phase-bar"><i id="phase-bar-fill"></i></div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta">
+            <span class="meta-k">都城 / 王庭</span>
+            <span class="meta-v" id="meta-capital">洛阳</span>
+          </div>
+          <div class="meta">
+            <span class="meta-k">并立政权</span>
+            <span class="meta-v" id="meta-powers">15</span>
+          </div>
+        </div>
+
+        <section class="events-block">
+          <div class="block-head">
+            <h3>此期大事</h3>
+            <span>ANNALS</span>
+          </div>
+          <div class="events" id="events"></div>
+        </section>
+
+        <section class="legend-block">
+          <div class="block-head">
+            <h3>图例</h3>
+            <span>LEGEND</span>
+          </div>
+          <div class="legend" id="legend"></div>
+          <div class="legend-note" id="legend-note">悬停高亮 · 点击聚焦</div>
+        </section>
+      </div>
+
+      <footer class="sidebar-foot">
+        <span>疆域为示意性近似，不作边界依据</span>
+        <button class="text-btn" data-open-about>数据与说明</button>
+      </footer>
+    </aside>
+
+    <main class="stage">
+      <section class="map-panel" id="map-panel" aria-label="中国历史疆域地图">
+        <svg id="map-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid meet" role="img" aria-label="中国历史疆域地图">
+          <defs>
+            <radialGradient id="sea-glow" cx="52%" cy="42%" r="70%">
+              <stop offset="0%" stop-color="#e6ede2"/>
+              <stop offset="62%" stop-color="#dbe5dc"/>
+              <stop offset="100%" stop-color="#cfdbd2"/>
+            </radialGradient>
+            <pattern id="sea-lines" width="26" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)">
+              <path d="M0 13 Q6.5 9, 13 13 T26 13" fill="none" stroke="#8aa294" stroke-width=".55" opacity=".18"/>
+            </pattern>
+            <pattern id="land-grain" width="7" height="7" patternUnits="userSpaceOnUse">
+              <circle cx="1" cy="1" r=".42" fill="#8f8a72" opacity=".13"/>
+              <circle cx="5" cy="4" r=".3" fill="#8f8a72" opacity=".08"/>
+            </pattern>
+            <filter id="soft-ink" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="2" seed="8" result="noise"/>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.15" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+            <filter id="capital-glow" x="-180%" y="-180%" width="460%" height="460%">
+              <feGaussianBlur stdDeviation="5" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="paper-noise" x="0" y="0" width="100%" height="100%">
+              <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="3" stitchTiles="stitch" result="n"/>
+              <feColorMatrix in="n" type="saturate" values="0"/>
+              <feComponentTransfer><feFuncA type="linear" slope=".055"/></feComponentTransfer>
+            </filter>
+            <linearGradient id="map-fade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff" stop-opacity=".9"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+
+          <rect width="1440" height="900" fill="url(#sea-glow)"/>
+          <rect width="1440" height="900" fill="url(#sea-lines)" opacity=".55"/>
+          <g id="map-root">
+            <g id="watermark" aria-hidden="true"></g>
+            <g id="graticule" aria-hidden="true"></g>
+            <g id="land" aria-hidden="true"></g>
+            <g id="lakes" aria-hidden="true"></g>
+            <g id="rivers" aria-hidden="true"></g>
+            <g id="geo-labels" aria-hidden="true"></g>
+            <g id="polity-layer"></g>
+            <g id="wall-layer" aria-hidden="true"></g>
+            <g id="capital-layer"></g>
+            <g id="label-layer" aria-hidden="true"></g>
+            <g id="event-layer"></g>
+          </g>
+          <rect width="1440" height="900" filter="url(#paper-noise)" opacity=".55" pointer-events="none"/>
+        </svg>
+
+        <div class="map-frame" aria-hidden="true">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        </div>
+
+        <div class="map-cartouche">
+          <span class="cartouche-kicker">舆图</span>
+          <span class="cartouche-title" id="cartouche-title">战国 · 天下形势</span>
+          <span class="cartouche-sub" id="cartouche-sub">公元前 403 年</span>
+        </div>
+
+        <div class="map-controls">
+          <div class="ctrl-group">
+            <button class="icon-btn" id="zoom-in" title="放大 (+)" aria-label="放大">
+              <svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></svg>
+            </button>
+            <button class="icon-btn" id="zoom-out" title="缩小 (−)" aria-label="缩小">
+              <svg viewBox="0 0 20 20"><path d="M4 10h12"/></svg>
+            </button>
+            <button class="icon-btn" id="zoom-reset" title="复位视图 (0)" aria-label="复位视图">
+              <svg viewBox="0 0 20 20"><path d="M4 8V4h4M12 4h4v4M16 12v4h-4M8 16H4v-4"/></svg>
+            </button>
+          </div>
+          <div class="ctrl-divider"></div>
+          <div class="ctrl-group">
+            <button class="layers-btn" id="layers-btn" aria-expanded="false" aria-controls="layers-pop">
+              <svg viewBox="0 0 20 20"><path d="M10 3l7 4-7 4-7-4 7-4zM3 11l7 4 7-4M3 15l7 4 7-4"/></svg>
+              <span>图层</span>
+            </button>
+          </div>
+          <div class="layers-pop" id="layers-pop" hidden>
+            <p class="pop-title">地图图层</p>
+            <label><input type="checkbox" data-layer="rivers" checked><span>河流水系</span><i></i></label>
+            <label><input type="checkbox" data-layer="neighbors" checked><span>四邻政权</span><i></i></label>
+            <label><input type="checkbox" data-layer="events" checked><span>历史事件</span><i></i></label>
+            <label><input type="checkbox" data-layer="wall" checked><span>长城</span><i></i></label>
+          </div>
+        </div>
+
+        <div class="map-compass" aria-hidden="true">
+          <svg viewBox="0 0 70 70">
+            <circle cx="35" cy="35" r="24" fill="none" stroke="currentColor" stroke-opacity=".28"/>
+            <circle cx="35" cy="35" r="29" fill="none" stroke="currentColor" stroke-opacity=".12" stroke-dasharray="1 4"/>
+            <path d="M35 10l5 20-5-3-5 3z" fill="currentColor" fill-opacity=".75"/>
+            <path d="M35 60l-4-17 4 2 4-2z" fill="currentColor" fill-opacity=".25"/>
+            <text x="35" y="7" text-anchor="middle">北</text>
+          </svg>
+        </div>
+
+        <div class="map-scale" aria-hidden="true">
+          <div class="scale-line"><i></i><i></i><i></i><i></i></div>
+          <span>0</span><span>500 km</span>
+        </div>
+
+        <div class="map-hint" id="map-hint">
+          <span class="hint-gesture">拖拽地图</span>
+          <span class="hint-dot"></span>
+          <span>滚轮缩放</span>
+          <span class="hint-dot"></span>
+          <span>点击政权聚焦</span>
+        </div>
+
+        <div class="map-tooltip" id="map-tooltip" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="timeline" id="timeline" aria-label="历史时间轴">
+        <div class="time-readout">
+          <div class="year-kicker"><span id="year-prefix">公元前</span><span class="year-kicker-line"></span></div>
+          <div class="year-big" id="year-big">403</div>
+          <div class="year-era" id="year-era">战国 · 周威烈王</div>
+          <div class="play-controls">
+            <button class="play-btn" id="play-btn" aria-label="播放历史演进" title="播放 / 暂停 (空格)">
+              <svg class="ic-play" viewBox="0 0 20 20"><path d="M7 4.5v11l9-5.5z"/></svg>
+              <svg class="ic-pause" viewBox="0 0 20 20"><path d="M6 4h3v12H6zM11 4h3v12h-3z"/></svg>
+            </button>
+            <button class="step-btn" id="step-prev" aria-label="上一年" title="上一年 (←)"><svg viewBox="0 0 20 20"><path d="M12.5 4.5L7 10l5.5 5.5"/></svg></button>
+            <button class="step-btn" id="step-next" aria-label="下一年" title="下一年 (→)"><svg viewBox="0 0 20 20"><path d="M7.5 4.5L13 10l-5.5 5.5"/></svg></button>
+          </div>
+        </div>
+
+        <div class="track-wrap">
+          <div class="track-head">
+            <div class="track-title">
+              <span>时间轴</span>
+              <span class="track-sub">拖动以穿越 · ← → 逐年 · Shift 十年</span>
+            </div>
+            <div class="scale-switch" role="group" aria-label="时间轴刻度">
+              <button class="active" data-scale="era">朝代等宽</button>
+              <button data-scale="year">年代比例</button>
+            </div>
+          </div>
+
+          <div class="track" id="track">
+            <div class="track-bands" id="track-bands"></div>
+            <div class="track-ticks" id="track-ticks" aria-hidden="true"></div>
+            <div class="track-baseline"></div>
+            <div class="playhead" id="playhead">
+              <div class="playhead-bubble" id="playhead-bubble">前 403</div>
+              <div class="playhead-stem"></div>
+              <div class="playhead-diamond"></div>
+            </div>
+            <div class="track-hover" id="track-hover" hidden>
+              <div class="hover-line"></div>
+              <div class="hover-bubble" id="hover-bubble">前 403</div>
+            </div>
+            <div class="track-hit" id="track-hit" role="slider" tabindex="0" aria-label="年份时间轴" aria-valuemin="-403" aria-valuemax="2025" aria-valuenow="-403"></div>
+          </div>
+          <div class="track-foot">
+            <span id="track-start">前 403</span>
+            <span class="track-foot-mid" id="track-foot-mid">公元前 403 — 公元 2025 · 18 个历史时期 · 197 幅疆域</span>
+            <span id="track-end">2025</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="about-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="about-title">
+      <button class="modal-close" data-close-about aria-label="关闭">
+        <svg viewBox="0 0 20 20"><path d="M5 5l10 10M15 5L5 15"/></svg>
+      </button>
+      <div class="modal-kicker">ABOUT THE ATLAS</div>
+      <h2 id="about-title">关于《山河卷》</h2>
+      <p class="modal-lead">从公元前 403 年三家分晋，到 2025 年。十八个历史时期、一百九十余幅疆域阶段，在一张可拖动、可缩放的地图上连续展开。</p>
+      <div class="modal-grid">
+        <div>
+          <h3>怎么玩</h3>
+          <p>拖动底部时间轴，或使用 <kbd>←</kbd> <kbd>→</kbd> 逐年穿梭；<kbd>Shift</kbd> + 方向键一次十年；<kbd>空格</kbd> 自动播放。拖拽地图平移，滚轮或右上角按钮缩放，点击政权可聚焦其疆域。</p>
+        </div>
+        <div>
+          <h3>疆域数据</h3>
+          <p>政权轮廓改编自开源项目 <a href="https://github.com/DeanChensj/jiangshan-map" target="_blank" rel="noreferrer">「江山时序」</a>（GPL-3.0），其数据源自 historical-basemaps 并据史籍校订。底图海岸线、河流与湖泊来自 <a href="https://www.naturalearthdata.com/" target="_blank" rel="noreferrer">Natural Earth</a>（公有领域）。</p>
+        </div>
+        <div>
+          <h3>关于准确性</h3>
+          <p>历史疆域没有唯一、精确的边界，本图所有轮廓均为示意性近似，用于呈现大势与变迁，不可作为边界依据。部分政权并立、羁縻与都护辖区以简化方式表达。</p>
+        </div>
+        <div>
+          <h3>视觉与技术</h3>
+          <p>单文件网页，无外部依赖。墨卡托投影、SVG 矢量绘制，支持键盘操作与移动端。界面取意于古舆图的青绿山水与朱砂印记。</p>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <span>山河卷 · 2025</span>
+        <span>GPL-3.0 · 仅作历史科普</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>window.__ATLAS_DATA__ = /*__DATA__*/;</script>
+<script>/*__APP__*/</script>
+</body>
+</html>
